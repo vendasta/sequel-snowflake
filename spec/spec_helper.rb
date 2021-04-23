@@ -7,4 +7,4 @@ SimpleCov.start do
 end
 SimpleCov.minimum_coverage(100)
 
-require 'sequel/snowflake'
+require 'sequel-snowflake'

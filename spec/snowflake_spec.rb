@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'sequel/snowflake'
+require 'sequel-snowflake'
 
 describe Sequel::Snowflake do
   it "should have a VERSION constant" do
