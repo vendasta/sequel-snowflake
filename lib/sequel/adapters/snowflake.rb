@@ -1,3 +1,4 @@
+require 'sequel'
 require 'sequel/adapters/odbc'
 
 # A lightweight adapter providing Snowflake support for the `sequel` gem.
@@ -57,11 +58,18 @@ module Sequel
           elsif column_type == ::ODBC::SQL_DECIMAL && !scale.zero?
             value.to_f
           else
-            value
+            # Ensure strings are in UTF-8: https://stackoverflow.com/q/65946886
+            value.is_a?(String) ? value.force_encoding('UTF-8') : value
           end
         end
       end
       private :convert_snowflake_value
+
+      # Snowflake can insert multiple rows using VALUES (https://stackoverflow.com/q/64578007)
+      def multi_insert_sql_strategy
+        :values
+      end
+      private :multi_insert_sql_strategy
     end
   end
 end
