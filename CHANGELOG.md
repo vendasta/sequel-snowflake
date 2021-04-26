@@ -1,4 +1,8 @@
-### 1.0.0 / 2021-04-22
+### 1.0.0 / 2021-04-22 [Initial Release]
 
-* Initial release:
-
+* Handle parsing Snowflake values for the following types:
+    * Numeric data types
+    * String data types
+    * Booleans
+    * Dates
+* Support insertion of multiple rows using the `VALUES` syntax. 

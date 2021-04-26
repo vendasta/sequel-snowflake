@@ -34,6 +34,7 @@ module Sequel
       # around Snowflake numerics, which come in through ODBC as Strings instead of Numbers.
       # In those cases, we need to examine the column type as well as the scale,
       # to properly convert Integers and Doubles.
+      # Partially inspired by https://github.com/instacart/odbc_adapter.
       #
       # @param value The actual value to be converted
       # @param column_type The type assigned to that value's column
