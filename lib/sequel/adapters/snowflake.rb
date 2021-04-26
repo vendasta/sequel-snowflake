@@ -7,6 +7,11 @@ require 'sequel/adapters/odbc'
 module Sequel
   module Snowflake
     class Database < Sequel::ODBC::Database
+      # Default varchar size is the maximum (https://docs.snowflake.com/en/sql-reference/data-types-text.html#varchar)
+      def default_string_column_size
+        16777216
+      end
+
       def dataset_class_default
         Sequel::Snowflake::Dataset
       end
