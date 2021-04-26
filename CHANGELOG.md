@@ -5,4 +5,5 @@
     * String data types
     * Booleans
     * Dates
-* Support insertion of multiple rows using the `VALUES` syntax. 
+* Support insertion of multiple rows using the `VALUES` syntax.
+* Support creating tables with `String` columns with maximum varchar size (16777216).
