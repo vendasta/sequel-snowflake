@@ -30,7 +30,7 @@ DB = Sequel.connect(adapter: :snowflake,
 
 In order to run specs, you'll need a Snowflake account. A connection string should be
 provided as an environment variable `SNOWFLAKE_CONN_STR`. For example, on macOS,
-our connection string could resemble:
+our connection string would resemble:
 
 ```bash
 DRIVER=/opt/snowflake/snowflakeodbc/lib/universal/libSnowflake.dylib;
@@ -42,6 +42,9 @@ UID=<user>;
 PWD=<password>;
 CLIENT_SESSION_KEEP_ALIVE=true;
 ```
+
+The test will create a temporary table on the specified database to run tests on, and this will
+be taken down either via the `after(:each)` blocks or when the connection is closed.
 
 ## Contributing
 
