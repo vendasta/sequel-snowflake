@@ -53,13 +53,14 @@ describe Sequel::Snowflake::Dataset do
 
     it 'inserts multiple records successfully using the VALUE syntax' do
       db[test_table].multi_insert(
-        [`
+        [
           { n: 17, d: 42.035, f: 1.2247, t: '2020-03-12 01:02:03.123456789', b: true, str: 'hi', str2: nil },
           { n: 18, d: 837.5, f: 3.09, t: '2020-03-15 11:22:33.12345', b: false, str: 'beware the ides', str2: 'of march' }
         ]
       )
-`
+
       expect(db[test_table].count).to eq(2)
+      expect(db[test_table].select(:n).all).to eq([{ n: 17 }, { n: 18 }])
     end
   end
 end
