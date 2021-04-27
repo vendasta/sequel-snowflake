@@ -46,8 +46,13 @@ describe Sequel::Snowflake::Dataset do
         str2: nil
       )
 
-      expect(res[:t].to_f).to be_within(0.001).of(Time.parse('2020-03-12T01:02:03.123Z').to_f)
+      expect(res[:t]).to be_a(Time)
+      expect(res[:t].iso8601).to eq('2020-03-12T01:02:03Z')
+
+      expect(res[:time]).to be_a(Time)
       expect(res[:time].to_s).to eq('01:02:03')
+
+      expect(res[:date]).to be_a(Date)
       expect(res[:date].to_s).to eq('2020-03-12')
     end
 
