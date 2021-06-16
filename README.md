@@ -17,6 +17,11 @@ Or install it yourself as:
 
     $ gem install sequel-snowflake
 
+You'll also need [unixODBC](http://www.unixodbc.org/) (if on Linux/macOS) and the appropriate
+[Snowflake ODBC driver](https://sfc-repo.snowflakecomputing.com/odbc/index.html) in order to use
+this adapter. Follow the Snowflake documentation on their ODBC Driver
+[here](https://docs.snowflake.com/en/user-guide/odbc.html) before proceeding.
+
 ## Usage
 
 When establishing the connection, specify `:snowflake` as the adapter to use.
