@@ -23,6 +23,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install unix-odbc
+      run: sudo apt-get install unixodbc
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
