@@ -3,6 +3,8 @@
 An adapter to connect to Snowflake databases using [Sequel](http://sequel.jeremyevans.net/).
 This provides proper types for returned values, as opposed to the ODBC adapter.
 
+[![Ruby](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml/badge.svg)](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml)
+
 ## Installation
 
 Add this line to your application's Gemfile:
