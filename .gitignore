@@ -46,10 +46,8 @@ build-iPhoneSimulator/
 # for a library or gem, you might want to ignore these files since the code is
 # intended to run in multiple environments; otherwise, check them in:
 Gemfile.lock
-# Note: We include both in source control as we set up CI based on the specified version here.
-#       We _should_ modify the CI process so gem builds can go against an arbitrary Ruby version in the future.
-# .ruby-version
-# .ruby-gemset
+.ruby-version
+.ruby-gemset
 
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
