@@ -53,6 +53,19 @@ CLIENT_SESSION_KEEP_ALIVE=true;
 The test will create a temporary table on the specified database to run tests on, and this will
 be taken down either via the `after(:each)` blocks or when the connection is closed.
 
+## GitHub Actions
+
+We have two workflows included in this project:
+
+* Ruby (`ruby.yml`): This runs the specs for this gem against Ruby 2.6, 2.7, and 3.0. Note
+that this requires the secret `SNOWFLAKE_CONN_STR` to be set (see above for example connection string),
+as we need to connect to Snowflake to run tests. These specs will be run for every pull request,
+and is run after every commit to those branches.
+
+* Ruby Gem (`gem-push.yml`): This builds and pushes this gem to RubyGems, acting only on successful
+pushes to the `main` branch. Note that this workflow requires a `RUBYGEMS_AUTH_TOKEN` secret to be set
+to authenticate with RubyGems.
+
 ## Contributing
 
 1. Fork it ( https://github.com/Yesware/sequel-snowflake/fork )
