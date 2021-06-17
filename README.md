@@ -3,6 +3,8 @@
 An adapter to connect to Snowflake databases using [Sequel](http://sequel.jeremyevans.net/).
 This provides proper types for returned values, as opposed to the ODBC adapter.
 
+[![Ruby](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml/badge.svg)](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -16,6 +18,11 @@ And then execute:
 Or install it yourself as:
 
     $ gem install sequel-snowflake
+
+You'll also need [unixODBC](http://www.unixodbc.org/) (if on Linux/macOS) and the appropriate
+[Snowflake ODBC driver](https://sfc-repo.snowflakecomputing.com/odbc/index.html) in order to use
+this adapter. Follow the Snowflake documentation on their ODBC Driver
+[here](https://docs.snowflake.com/en/user-guide/odbc.html) before proceeding.
 
 ## Usage
 
@@ -45,6 +52,19 @@ CLIENT_SESSION_KEEP_ALIVE=true;
 
 The test will create a temporary table on the specified database to run tests on, and this will
 be taken down either via the `after(:each)` blocks or when the connection is closed.
+
+## GitHub Actions
+
+We have two workflows included in this project:
+
+* Ruby (`ruby.yml`): This runs the specs for this gem against Ruby 2.6, 2.7, and 3.0. Note
+that this requires the secret `SNOWFLAKE_CONN_STR` to be set (see above for example connection string),
+as we need to connect to Snowflake to run tests. These specs will be run for every pull request,
+and is run after every commit to those branches.
+
+* Ruby Gem (`gem-push.yml`): This builds and pushes this gem to RubyGems, acting only on successful
+pushes to the `main` branch. Note that this workflow requires a `RUBYGEMS_AUTH_TOKEN` secret to be set
+to authenticate with RubyGems.
 
 ## Contributing
 
