@@ -8,6 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Sequel::Snowflake::VERSION
   spec.authors       = ["Yesware, Inc"]
   spec.email         = ["engineering@yesware.com"]
+  spec.license       = "MIT"
   spec.summary       = %q{Sequel adapter for Snowflake}
   spec.description   = spec.summary
   spec.homepage      = "https://github.com/Yesware/sequel-snowflake"
