@@ -1,5 +1,6 @@
 require 'sequel'
 require 'sequel/adapters/odbc'
+require_relative 'shared/snowflake'
 
 # A lightweight adapter providing Snowflake support for the `sequel` gem.
 # The only difference between this and the Sequel-provided ODBC adapter is
@@ -20,6 +21,8 @@ module Sequel
 
     # A custom Sequel Dataset class crafted specifically to handle Snowflake results.
     class Dataset < Sequel::ODBC::Dataset
+      include Sequel::Snowflake::DatasetMethods
+
       def fetch_rows(sql)
         execute(sql) do |s|
           i = -1
