@@ -68,4 +68,36 @@ describe Sequel::Snowflake::Dataset do
       expect(db[test_table].select(:n).all).to eq([{ n: 17 }, { n: 18 }])
     end
   end
+
+  describe '#explain' do
+    # Create a test table with a reasonably-random suffix
+    let!(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    let!(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+
+    before(:each) do
+      db.create_table(test_table, :temp => true) do
+        Numeric :id
+        String :name
+        String :email
+        String :title
+      end
+
+      db[test_table].insert(
+        { id: 1, name: 'John Null', email: 'j.null@example.com', title: 'Software Tester' }
+      )
+    end
+
+    after(:each) do
+      db.drop_table(test_table)
+    end
+
+    it "should have explain output" do
+      query = db.fetch("SELECT * FROM #{test_table} WHERE ID=1;")
+
+      expect(query.explain).to be_a_kind_of(String)
+      expect(query.explain(:tabular=>true)).to be_a_kind_of(String)
+      expect(query.explain(:json=>true)).to be_a_kind_of(String)
+      expect(query.explain(:text=>true)).to be_a_kind_of(String)
+    end
+  end
 end
