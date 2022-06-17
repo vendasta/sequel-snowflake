@@ -13,14 +13,14 @@ module Sequel
         # Load the PrettyTable class, needed for explain output
         Sequel.extension(:_pretty_table) unless defined?(Sequel::PrettyTable)
 
-        if opts[:tabular]
-          explain_with_format = "EXPLAIN USING TABULAR"
+        explain_with_format = if opts[:tabular]
+          "EXPLAIN USING TABULAR"
         elsif opts[:json]
-          explain_with_format = "EXPLAIN USING JSON"
+          "EXPLAIN USING JSON"
         elsif opts[:text]
-          explain_with_format = "EXPLAIN USING TEXT"
+          "EXPLAIN USING TEXT"
         else
-          explain_with_format = "EXPLAIN"
+          "EXPLAIN"
         end
 
         ds = db.send(:metadata_dataset).clone(:sql=>"#{explain_with_format} #{select_sql}")
