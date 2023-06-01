@@ -1,0 +1,45 @@
+steps:
+  - id: 'clone dev services'
+    name: gcr.io/cloud-builders/git
+    entrypoint: bash
+    secretEnv:
+      - GITHUB_TOKEN
+    args:
+      - '-c'
+      - |
+        git clone https://$$GITHUB_TOKEN@github.com/Yesware/dev-services.git
+        cd dev-services
+        echo -e "networks:\n  default:\n    external:\n      name: cloudbuild" >> docker-compose.yml
+  - id: 'start dev services'
+    name: docker/compose
+    args: ['-f', 'dev-services/docker-compose.yml', 'up', '-d', '--build']
+  - id: 'bundle install'
+    name: gcr.io/repcore-prod/yw-ci:latest
+    env:
+      - 'RAILS_ENV=test'
+    script: |
+      #!/usr/bin/env bash
+      source /nvm/nvmrc
+      bundle install
+    waitFor: ['-']
+    volumes:
+      - name: 'bundle'
+        path: '/usr/local/bundle'
+  - id: 'rake ci'
+    name: gcr.io/repcore-prod/yw-ci:latest
+    env:
+      - 'RAILS_ENV=test'
+      - 'CLOUDBUILD_PG=postgres-14-7'
+    script: |
+      #!/usr/bin/env bash
+      source /nvm/nvmrc
+      bundle exec rake ci
+    volumes:
+      - name: 'bundle'
+        path: '/usr/local/bundle'
+options:
+  machineType: E2_HIGHCPU_32
+availableSecrets:
+  secretManager:
+    - versionName: projects/873947770763/secrets/CI_Github_Token/versions/latest
+      env: GITHUB_TOKEN
