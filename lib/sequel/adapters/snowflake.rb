@@ -79,6 +79,11 @@ module Sequel
         :values
       end
       private :multi_insert_sql_strategy
+
+      # https://docs.snowflake.com/en/sql-reference/sql/merge
+      def supports_merge?
+        true
+      end
     end
   end
 end
