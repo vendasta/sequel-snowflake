@@ -67,6 +67,23 @@ describe Sequel::Snowflake::Dataset do
       expect(db[test_table].count).to eq(2)
       expect(db[test_table].select(:n).all).to eq([{ n: 17 }, { n: 18 }])
     end
+
+    it 'can use MERGE' do
+      merge_table = "#{test_table}_MERGE".to_sym
+
+      db.create_table(merge_table, :temp => true) do
+        String :from
+        String :to
+      end
+
+      db[test_table].insert({ str: 'foo', str2: 'foo' })
+      db[merge_table].insert({ from: 'foo', to: 'bar' })
+      db[test_table].merge_using(merge_table, str: :from).merge_update(str2: :to).merge
+
+      expect(db[test_table].select_map(:str2)).to eq(['bar'])
+
+      db.drop_table(merge_table)
+    end
   end
 
   describe '#explain' do
