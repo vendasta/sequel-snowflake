@@ -23,12 +23,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install unix-odbc
-      run: sudo apt-get install unixodbc
+    - name: Update package lists
+      run: sudo apt-get update
+    - name: Install unixodbc-dev, odbcinst, and unixodbc
+      run: sudo apt-get -y install unixodbc-dev odbcinst unixodbc
     - name: Install Snowflake ODBC driver
       run: curl ${SNOWFLAKE_DRIVER_URL} -o snowflake_driver.deb && sudo dpkg -i snowflake_driver.deb
       env:
-        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linux/2.25.10/snowflake-odbc-2.25.10.x86_64.deb
+        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linux/3.1.1/snowflake-odbc-3.1.1.x86_64.deb
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
