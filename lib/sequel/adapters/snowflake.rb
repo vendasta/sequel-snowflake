@@ -38,7 +38,9 @@ module Sequel
         self
       end
 
-      # https://docs.snowflake.com/en/sql-reference/sql/merge
+      # Whether the MERGE statement is supported:
+      # https://github.com/jeremyevans/sequel/blob/master/lib/sequel/dataset/features.rb#L129
+      # Snowflake reference: https://docs.snowflake.com/en/sql-reference/sql/merge
       def supports_merge?
         true
       end
