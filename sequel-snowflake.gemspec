@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
   spec.summary       = %q{Sequel adapter for Snowflake}
   spec.description   = spec.summary
-  spec.homepage      = "https://github.com/Yesware/sequel-snowflake"
+  spec.homepage      = "https://github.com/vendasta/sequel-snowflake"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
