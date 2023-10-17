@@ -38,6 +38,11 @@ module Sequel
         self
       end
 
+      # https://docs.snowflake.com/en/sql-reference/sql/merge
+      def supports_merge?
+        true
+      end
+
       # This is similar to the ODBC adapter's Dataset#convert_odbc_value, except for some special casing
       # around Snowflake numerics, which come in through ODBC as Strings instead of Numbers.
       # In those cases, we need to examine the column type as well as the scale,

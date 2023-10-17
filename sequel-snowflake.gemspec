@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
 
-  spec.add_runtime_dependency 'sequel'
+  spec.add_runtime_dependency 'sequel', '>= 5.58.0'
   spec.add_runtime_dependency 'ruby-odbc'
 
   spec.add_development_dependency 'rake'

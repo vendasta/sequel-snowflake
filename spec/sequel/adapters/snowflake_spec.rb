@@ -1,10 +1,11 @@
 require 'securerandom'
 
 describe Sequel::Snowflake::Dataset do
+  let(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+
   describe 'Converting Snowflake data types' do
     # Create a test table with a reasonably-random suffix
-    let!(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let!(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+    let(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
     before(:each) do
       # Set timezone for parsing timestamps. This gives us a consistent timezone to test against below.
@@ -69,10 +70,40 @@ describe Sequel::Snowflake::Dataset do
     end
   end
 
+  describe 'MERGE feature' do
+    let(:merge_table_1) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}_1".to_sym }
+    let(:merge_table_2) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}_2".to_sym }
+
+    before(:each) do
+      db.create_table(merge_table_1, :temp => true) do
+        String :str
+        String :str2
+      end
+
+      db.create_table(merge_table_2, :temp => true) do
+        String :from
+        String :to
+      end
+
+      db[merge_table_1].insert({ str: 'foo', str2: 'foo' })
+      db[merge_table_2].insert({ from: 'foo', to: 'bar' })
+    end
+
+    after(:each) do
+      db.drop_table(merge_table_1)
+      db.drop_table(merge_table_2)
+    end
+
+    it 'can use MERGE' do
+      db[merge_table_1].merge_using(merge_table_2, str: :from).merge_update(str2: :to).merge
+
+      expect(db[merge_table_1].select_map(:str2)).to eq(['bar'])
+    end
+  end
+
   describe '#explain' do
     # Create a test table with a reasonably-random suffix
-    let!(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let!(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+    let(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
     before(:each) do
       db.create_table(test_table, :temp => true) do
