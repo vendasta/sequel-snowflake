@@ -86,6 +86,7 @@ describe Sequel::Snowflake::Dataset do
       end
 
       db[target_table].insert({ str: 'foo', str2: 'foo' })
+      db[target_table].insert({ str: 'baz', str2: 'foo' })
       db[source_table].insert({ from: 'foo', to: 'bar' })
     end
 
@@ -97,7 +98,10 @@ describe Sequel::Snowflake::Dataset do
     it 'can use MERGE' do
       db[target_table].merge_using(source_table, str: :from).merge_update(str2: :to).merge
 
-      expect(db[target_table].select_map(:str2)).to eq(['bar'])
+      expect(db[target_table].select_all.all).to match_array([
+        { str: 'foo', str2: 'bar' },
+        { str: 'baz', str2: 'foo' },
+      ])
     end
   end
 
