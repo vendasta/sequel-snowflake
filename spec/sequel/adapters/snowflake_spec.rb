@@ -78,16 +78,18 @@ describe Sequel::Snowflake::Dataset do
       db.create_table(target_table, :temp => true) do
         String :str
         String :str2
+        String :str3
       end
 
       db.create_table(source_table, :temp => true) do
         String :from
         String :to
+        String :whomst
       end
 
-      db[target_table].insert({ str: 'foo', str2: 'foo' })
-      db[target_table].insert({ str: 'baz', str2: 'foo' })
-      db[source_table].insert({ from: 'foo', to: 'bar' })
+      db[target_table].insert({ str: 'foo', str2: 'foo', str3: 'phoo' })
+      db[target_table].insert({ str: 'baz', str2: 'foo', str3: 'buzz' })
+      db[source_table].insert({ from: 'foo', to: 'bar', whomst: 'me' })
     end
 
     after(:each) do
@@ -99,8 +101,8 @@ describe Sequel::Snowflake::Dataset do
       db[target_table].merge_using(source_table, str: :from).merge_update(str2: :to).merge
 
       expect(db[target_table].select_all.all).to match_array([
-        { str: 'foo', str2: 'bar' },
-        { str: 'baz', str2: 'foo' },
+        { str: 'foo', str2: 'bar', str3: 'phoo' },
+        { str: 'baz', str2: 'foo', str3: 'buzz' }
       ])
     end
   end
