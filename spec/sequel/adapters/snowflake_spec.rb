@@ -71,33 +71,33 @@ describe Sequel::Snowflake::Dataset do
   end
 
   describe 'MERGE feature' do
-    let(:merge_table_1) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}_1".to_sym }
-    let(:merge_table_2) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}_2".to_sym }
+    let(:target_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    let(:source_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
     before(:each) do
-      db.create_table(merge_table_1, :temp => true) do
+      db.create_table(target_table, :temp => true) do
         String :str
         String :str2
       end
 
-      db.create_table(merge_table_2, :temp => true) do
+      db.create_table(source_table, :temp => true) do
         String :from
         String :to
       end
 
-      db[merge_table_1].insert({ str: 'foo', str2: 'foo' })
-      db[merge_table_2].insert({ from: 'foo', to: 'bar' })
+      db[target_table].insert({ str: 'foo', str2: 'foo' })
+      db[source_table].insert({ from: 'foo', to: 'bar' })
     end
 
     after(:each) do
-      db.drop_table(merge_table_1)
-      db.drop_table(merge_table_2)
+      db.drop_table(target_table)
+      db.drop_table(source_table)
     end
 
     it 'can use MERGE' do
-      db[merge_table_1].merge_using(merge_table_2, str: :from).merge_update(str2: :to).merge
+      db[target_table].merge_using(source_table, str: :from).merge_update(str2: :to).merge
 
-      expect(db[merge_table_1].select_map(:str2)).to eq(['bar'])
+      expect(db[target_table].select_map(:str2)).to eq(['bar'])
     end
   end
 
