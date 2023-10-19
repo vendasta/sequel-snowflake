@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.2.0 / 2023-10-17
+* Add support for `MERGE` (credit: @benalavi)
+* Add requirement for `sequel` v5.58.0 or newer (to support the new MERGE methods).
+
 ## 2.1.0 / 2022-06-17
 * Add support for `EXPLAIN`.
 

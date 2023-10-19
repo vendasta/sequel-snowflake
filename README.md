@@ -3,7 +3,7 @@
 An adapter to connect to Snowflake databases using [Sequel](http://sequel.jeremyevans.net/).
 This provides proper types for returned values, as opposed to the ODBC adapter.
 
-[![Ruby](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml/badge.svg)](https://github.com/Yesware/sequel-snowflake/actions/workflows/ruby.yml)
+[![Ruby](https://github.com/vendasta/sequel-snowflake/actions/workflows/ruby.yml/badge.svg)](https://github.com/vendasta/sequel-snowflake/actions/workflows/ruby.yml)
 
 ## Installation
 
@@ -57,7 +57,7 @@ be taken down either via the `after(:each)` blocks or when the connection is clo
 
 We have two workflows included in this project:
 
-* Ruby (`ruby.yml`): This runs the specs for this gem against Ruby 2.6, 2.7, and 3.0. Note
+* Ruby (`ruby.yml`): This runs the specs for this gem against Ruby 3.0 and 3.1. Note
 that this requires the secret `SNOWFLAKE_CONN_STR` to be set (see above for example connection string),
 as we need to connect to Snowflake to run tests. These specs will be run for every pull request,
 and is run after every commit to those branches.
@@ -68,7 +68,7 @@ to authenticate with RubyGems.
 
 ## Contributing
 
-1. Fork it ( https://github.com/Yesware/sequel-snowflake/fork )
+1. Fork it ( https://github.com/vendasta/sequel-snowflake/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

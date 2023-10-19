@@ -1,10 +1,11 @@
 require 'securerandom'
 
 describe Sequel::Snowflake::Dataset do
+  let(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+
   describe 'Converting Snowflake data types' do
     # Create a test table with a reasonably-random suffix
-    let!(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let!(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+    let(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
     before(:each) do
       # Set timezone for parsing timestamps. This gives us a consistent timezone to test against below.
@@ -69,10 +70,46 @@ describe Sequel::Snowflake::Dataset do
     end
   end
 
+  describe 'MERGE feature' do
+    let(:target_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    let(:source_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+
+    before(:each) do
+      db.create_table(target_table, :temp => true) do
+        String :str
+        String :str2
+        String :str3
+      end
+
+      db.create_table(source_table, :temp => true) do
+        String :from
+        String :to
+        String :whomst
+      end
+
+      db[target_table].insert({ str: 'foo', str2: 'foo', str3: 'phoo' })
+      db[target_table].insert({ str: 'baz', str2: 'foo', str3: 'buzz' })
+      db[source_table].insert({ from: 'foo', to: 'bar', whomst: 'me' })
+    end
+
+    after(:each) do
+      db.drop_table(target_table)
+      db.drop_table(source_table)
+    end
+
+    it 'can use MERGE' do
+      db[target_table].merge_using(source_table, str: :from).merge_update(str2: :to).merge
+
+      expect(db[target_table].select_all.all).to match_array([
+        { str: 'foo', str2: 'bar', str3: 'phoo' },
+        { str: 'baz', str2: 'foo', str3: 'buzz' }
+      ])
+    end
+  end
+
   describe '#explain' do
     # Create a test table with a reasonably-random suffix
-    let!(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let!(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+    let(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
     before(:each) do
       db.create_table(test_table, :temp => true) do
