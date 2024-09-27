@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby-version: ['3.0', '3.1']
+        ruby-version: ['3.2', '3.3']
 
     steps:
     - uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
     - name: Install Snowflake ODBC driver
       run: curl ${SNOWFLAKE_DRIVER_URL} -o snowflake_driver.deb && sudo dpkg -i snowflake_driver.deb
       env:
-        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linux/3.1.1/snowflake-odbc-3.1.1.x86_64.deb
+        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linux/3.3.2/snowflake_linux_x8664_odbc-3.3.2.tgz
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
