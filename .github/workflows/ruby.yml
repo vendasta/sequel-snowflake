@@ -30,7 +30,7 @@ jobs:
     - name: Install Snowflake ODBC driver
       run: curl ${SNOWFLAKE_DRIVER_URL} -o snowflake_driver.deb && sudo dpkg -i snowflake_driver.deb
       env:
-        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linuxaarch64/3.4.1/snowflake-odbc-3.4.1.aarch64.deb
+        SNOWFLAKE_DRIVER_URL: https://sfc-repo.snowflakecomputing.com/odbc/linux/3.4.1/snowflake-odbc-3.4.1.x86_64.deb
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
