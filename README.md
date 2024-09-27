@@ -24,6 +24,11 @@ You'll also need [unixODBC](http://www.unixodbc.org/) (if on Linux/macOS) and th
 this adapter. Follow the Snowflake documentation on their ODBC Driver
 [here](https://docs.snowflake.com/en/user-guide/odbc.html) before proceeding.
 
+After installing, you may need to configure `simba.snowflake.ini` and set
+`DriverManagerEncoding` to "UTF-16", the default encoding for unixODBC. If
+unixODBC was built specifically with the `DSQL_WCHART_CONVERT` flag, then
+Snowflake's default of "UTF-32" is fine as-is.
+
 ## Usage
 
 When establishing the connection, specify `:snowflake` as the adapter to use.
