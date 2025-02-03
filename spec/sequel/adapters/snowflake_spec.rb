@@ -113,7 +113,8 @@ describe Sequel::Snowflake::Dataset do
 
       res = db.
         fetch(query).
-        group_cube(:state, :city).
+        group(:state, :city).
+        group_cube.
         order(Sequel.asc(:state, nulls: :last)).
         order_append(:city).
         select_all.
