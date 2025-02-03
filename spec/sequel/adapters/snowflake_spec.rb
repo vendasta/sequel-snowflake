@@ -70,6 +70,85 @@ describe Sequel::Snowflake::Dataset do
     end
   end
 
+  describe 'GROUP CUBE feature' do
+    let(:products) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    let(:sales) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+
+    before(:each) do
+      db.create_table(products, :temp => true) do
+        Integer :product_id
+        Float :wholesale_price
+      end
+
+      db.create_table(sales, :temp => true) do
+        Integer :product_id
+        Float :retail_price
+        Integer :quantity
+        String :city
+        String :state
+      end
+
+      db[products].insert({ product_id: 1, wholesale_price: 1.00 })
+      db[products].insert({ product_id: 2, wholesale_price: 2.00 })
+      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 1, city: 'SF', state: 'CA' })
+      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 2, city: 'SJ', state: 'CA' })
+      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 4, city: 'SF', state: 'CA' })
+      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 8, city: 'SJ', state: 'CA' })
+      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 16, city: 'Miami', state: 'FL' })
+      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 32, city: 'Orlando', state: 'FL' })
+      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 64, city: 'SJ', state: 'CA' })
+    end
+
+    after(:each) do
+      db.drop_table(products)
+      db.drop_table(sales)
+    end
+
+    it 'can use GROUP CUBE' do
+      query = <<-SQL
+        SELECT state, city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
+        FROM #{products} AS p, #{sales} AS s
+        WHERE p.product_id = s.product_id
+        SQL
+
+      res = db.
+        fetch(query).
+        group_cube(:state, :city).
+        order(Sequel.asc(:state, nulls: :last)).
+        order_append(:city).
+        select_all.
+        all
+
+      expect(res).to match_array([
+        { state: 'CA', city: 'SF', profit: 13 },
+        { state: 'CA', city: 'SJ', profit: 26 },
+        { state: 'CA', city: nil, profit: 39 },
+        { state: 'FL', city: 'Miami', profit: 48 },
+        { state: 'FL', city: 'Orlando', profit: 96 },
+        { state: 'FL', city: nil, profit: 144 },
+        { state: 'PR', city: 'SJ', profit: 192 },
+        { state: 'PR', city: nil, profit: 192 },
+        { state: nil, city: 'Miami', profit: 48 },
+        { state: nil, city: 'Orlando', profit: 96 },
+        { state: nil, city: 'SF', profit: 13 },
+        { state: nil, city: 'SJ', profit: 218 },
+        { state: nil, city: nil, profit: 375 },
+      ])
+    end
+  end
+
+  describe 'GROUP ROLLUP feature' do
+
+  end
+
+  describe 'GROUPING SETS feature' do
+
+  end
+
+  describe 'LATERAL JOIN feature' do
+
+  end
+
   describe 'MERGE feature' do
     let(:target_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
     let(:source_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }

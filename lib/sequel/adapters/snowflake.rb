@@ -38,9 +38,27 @@ module Sequel
         self
       end
 
-      # Whether the MERGE statement is supported:
-      # https://github.com/jeremyevans/sequel/blob/master/lib/sequel/dataset/features.rb#L129
-      # Snowflake reference: https://docs.snowflake.com/en/sql-reference/sql/merge
+      # https://docs.snowflake.com/en/sql-reference/constructs/group-by-cube
+      def supports_group_cube?
+        true
+      end
+
+      # https://docs.snowflake.com/en/sql-reference/constructs/group-by-rollup
+      def supports_group_rollup?
+        true
+      end
+
+      # https://docs.snowflake.com/en/sql-reference/constructs/group-by-grouping-sets
+      def supports_grouping_sets?
+        true
+      end
+
+      # https://docs.snowflake.com/en/sql-reference/constructs/join-lateral
+      def supports_lateral_subqueries?
+        true
+      end
+
+      # https://docs.snowflake.com/en/sql-reference/sql/merge
       def supports_merge?
         true
       end
