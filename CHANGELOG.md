@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Add support for `GROUP CUBE`
 * Add support for `GROUP ROLLUP`
 * Add support for `GROUPING SETS`
-* Add support for `JOIN LATERAL`
 
 ## 2.2.0 / 2023-10-17
 * Add support for `MERGE` (credit: @benalavi)

@@ -1,7 +1,15 @@
 require 'securerandom'
 
 describe Sequel::Snowflake::Dataset do
-  let(:db) { Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+  let(:db) { @db ||= Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR']) }
+  
+  before(:all) do
+    @db = Sequel.connect(adapter: :snowflake, drvconnect: ENV['SNOWFLAKE_CONN_STR'])
+  end
+  
+  after(:all) do
+    @db.disconnect if @db
+  end
 
   describe 'Converting Snowflake data types' do
     # Create a test table with a reasonably-random suffix
@@ -70,17 +78,17 @@ describe Sequel::Snowflake::Dataset do
     end
   end
 
-  describe 'GROUP CUBE feature' do
-    let(:products) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let(:sales) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+  describe 'GROUP BY features' do
+    before(:all) do
+      @products = "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym
+      @sales = "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym
 
-    before(:each) do
-      db.create_table(products, :temp => true) do
+      @db.create_table(@products, :temp => true) do
         Integer :product_id
         Float :wholesale_price
       end
 
-      db.create_table(sales, :temp => true) do
+      @db.create_table(@sales, :temp => true) do
         Integer :product_id
         Float :retail_price
         Integer :quantity
@@ -88,21 +96,24 @@ describe Sequel::Snowflake::Dataset do
         String :state
       end
 
-      db[products].insert({ product_id: 1, wholesale_price: 1.00 })
-      db[products].insert({ product_id: 2, wholesale_price: 2.00 })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 1, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 2, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 4, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 8, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 16, city: 'Miami', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 32, city: 'Orlando', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 64, city: 'SJ', state: 'CA' })
+      @db[@products].insert({ product_id: 1, wholesale_price: 1.00 })
+      @db[@products].insert({ product_id: 2, wholesale_price: 2.00 })
+      @db[@sales].insert({ product_id: 1, retail_price: 2.00, quantity: 1, city: 'SF', state: 'CA' })
+      @db[@sales].insert({ product_id: 1, retail_price: 2.00, quantity: 2, city: 'SJ', state: 'CA' })
+      @db[@sales].insert({ product_id: 2, retail_price: 5.00, quantity: 4, city: 'SF', state: 'CA' })
+      @db[@sales].insert({ product_id: 2, retail_price: 5.00, quantity: 8, city: 'SJ', state: 'CA' })
+      @db[@sales].insert({ product_id: 2, retail_price: 5.00, quantity: 16, city: 'Miami', state: 'FL' })
+      @db[@sales].insert({ product_id: 2, retail_price: 5.00, quantity: 32, city: 'Orlando', state: 'FL' })
+      @db[@sales].insert({ product_id: 2, retail_price: 5.00, quantity: 64, city: 'SJ', state: 'CA' })
     end
 
-    after(:each) do
-      db.drop_table(products)
-      db.drop_table(sales)
+    after(:all) do
+      @db.drop_table(@products) if @products
+      @db.drop_table(@sales) if @sales
     end
+
+    let(:products) { @products }
+    let(:sales) { @sales }
 
     it 'can use GROUP CUBE' do
       res = db.from(Sequel[products].as(:p)).
@@ -132,41 +143,6 @@ describe Sequel::Snowflake::Dataset do
         { state: nil, city: nil, profit: 375 },
       ])
     end
-  end
-
-  describe 'GROUP ROLLUP feature' do
-    let(:products) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let(:sales) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-
-    before(:each) do
-      db.create_table(products, :temp => true) do
-        Integer :product_id
-        Float :wholesale_price
-      end
-
-      db.create_table(sales, :temp => true) do
-        Integer :product_id
-        Float :retail_price
-        Integer :quantity
-        String :city
-        String :state
-      end
-
-      db[products].insert({ product_id: 1, wholesale_price: 1.00 })
-      db[products].insert({ product_id: 2, wholesale_price: 2.00 })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 1, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 2, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 4, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 8, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 16, city: 'Miami', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 32, city: 'Orlando', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 64, city: 'SJ', state: 'CA' })
-    end
-
-    after(:each) do
-      db.drop_table(products)
-      db.drop_table(sales)
-    end
 
     it 'can use GROUP ROLLUP' do
       res = db.from(Sequel[products].as(:p)).
@@ -191,41 +167,6 @@ describe Sequel::Snowflake::Dataset do
         { state: 'FL', city: nil, profit: 144 },
         { state: nil, city: nil, profit: 375 },
       ])
-    end
-  end
-
-  describe 'GROUPING SETS feature' do
-    let(:products) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let(:sales) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-
-    before(:each) do
-      db.create_table(products, :temp => true) do
-        Integer :product_id
-        Float :wholesale_price
-      end
-
-      db.create_table(sales, :temp => true) do
-        Integer :product_id
-        Float :retail_price
-        Integer :quantity
-        String :city
-        String :state
-      end
-
-      db[products].insert({ product_id: 1, wholesale_price: 1.00 })
-      db[products].insert({ product_id: 2, wholesale_price: 2.00 })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 1, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 1, retail_price: 2.00, quantity: 2, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 4, city: 'SF', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 8, city: 'SJ', state: 'CA' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 16, city: 'Miami', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 32, city: 'Orlando', state: 'FL' })
-      db[sales].insert({ product_id: 2, retail_price: 5.00, quantity: 64, city: 'SJ', state: 'CA' })
-    end
-
-    after(:each) do
-      db.drop_table(products)
-      db.drop_table(sales)
     end
 
     it 'can use GROUPING SETS' do
@@ -253,89 +194,40 @@ describe Sequel::Snowflake::Dataset do
     end
   end
 
-  describe 'LATERAL JOIN feature' do
-    let(:employees) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let(:departments) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-
-    before(:each) do
-      db.create_table(departments, :temp => true) do
-        Integer :dept_id
-        String :dept_name
-        Integer :budget
-      end
-
-      db.create_table(employees, :temp => true) do
-        Integer :emp_id
-        String :emp_name
-        Integer :dept_id
-        Integer :salary
-      end
-
-      db[departments].insert({ dept_id: 1, dept_name: 'Engineering', budget: 100000 })
-      db[departments].insert({ dept_id: 2, dept_name: 'Sales', budget: 80000 })
-      db[employees].insert({ emp_id: 1, emp_name: 'Alice', dept_id: 1, salary: 75000 })
-      db[employees].insert({ emp_id: 2, emp_name: 'Bob', dept_id: 1, salary: 80000 })
-      db[employees].insert({ emp_id: 3, emp_name: 'Charlie', dept_id: 2, salary: 60000 })
-      db[employees].insert({ emp_id: 4, emp_name: 'Diana', dept_id: 2, salary: 65000 })
-    end
-
-    after(:each) do
-      db.drop_table(employees)
-      db.drop_table(departments)
-    end
-
-    it 'can use LATERAL JOIN' do
-      res = db.from(
-        Sequel[departments].as(:d),
-        db[employees].
-          where(Sequel[:d][:dept_id] => :dept_id).
-          select(:emp_name, :salary).
-          lateral.
-          as(:e)
-      ).
-        select(
-          Sequel[:d][:dept_name],
-          Sequel[:e][:emp_name].as(:employee),
-          Sequel[:e][:salary]
-        ).
-        order(Sequel[:d][:dept_name], Sequel.desc(Sequel[:e][:salary])).
-        all
-
-      expect(res).to match_array([
-        { dept_name: 'Engineering', employee: 'Bob', salary: 80000 },
-        { dept_name: 'Engineering', employee: 'Alice', salary: 75000 },
-        { dept_name: 'Sales', employee: 'Diana', salary: 65000 },
-        { dept_name: 'Sales', employee: 'Charlie', salary: 60000 },
-      ])
-    end
-  end
-
   describe 'MERGE feature' do
-    let(:target_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
-    let(:source_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    before(:all) do
+      @target_table = "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym
+      @source_table = "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym
 
-    before(:each) do
-      db.create_table(target_table, :temp => true) do
+      @db.create_table(@target_table, :temp => true) do
         String :str
         String :str2
         String :str3
       end
 
-      db.create_table(source_table, :temp => true) do
+      @db.create_table(@source_table, :temp => true) do
         String :from
         String :to
         String :whomst
       end
-
-      db[target_table].insert({ str: 'foo', str2: 'foo', str3: 'phoo' })
-      db[target_table].insert({ str: 'baz', str2: 'foo', str3: 'buzz' })
-      db[source_table].insert({ from: 'foo', to: 'bar', whomst: 'me' })
     end
 
-    after(:each) do
-      db.drop_table(target_table)
-      db.drop_table(source_table)
+    after(:all) do
+      @db.drop_table(@target_table) if @target_table
+      @db.drop_table(@source_table) if @source_table
     end
+
+    before(:each) do
+      # Clear and repopulate data for each test since MERGE modifies data
+      db[@target_table].delete
+      db[@source_table].delete
+      db[@target_table].insert({ str: 'foo', str2: 'foo', str3: 'phoo' })
+      db[@target_table].insert({ str: 'baz', str2: 'foo', str3: 'buzz' })
+      db[@source_table].insert({ from: 'foo', to: 'bar', whomst: 'me' })
+    end
+
+    let(:target_table) { @target_table }
+    let(:source_table) { @source_table }
 
     it 'can use MERGE' do
       db[target_table].merge_using(source_table, str: :from).merge_update(str2: :to).merge
@@ -348,25 +240,26 @@ describe Sequel::Snowflake::Dataset do
   end
 
   describe '#explain' do
-    # Create a test table with a reasonably-random suffix
-    let(:test_table) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    before(:all) do
+      @test_table = "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym
 
-    before(:each) do
-      db.create_table(test_table, :temp => true) do
+      @db.create_table(@test_table, :temp => true) do
         Numeric :id
         String :name
         String :email
         String :title
       end
 
-      db[test_table].insert(
+      @db[@test_table].insert(
         { id: 1, name: 'John Null', email: 'j.null@example.com', title: 'Software Tester' }
       )
     end
 
-    after(:each) do
-      db.drop_table(test_table)
+    after(:all) do
+      @db.drop_table(@test_table) if @test_table
     end
+
+    let(:test_table) { @test_table }
 
     it "should have explain output" do
       query = db.fetch("SELECT * FROM #{test_table} WHERE ID=1;")

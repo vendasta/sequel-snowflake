@@ -53,11 +53,6 @@ module Sequel
         true
       end
 
-      # https://docs.snowflake.com/en/sql-reference/constructs/join-lateral
-      def supports_lateral_subqueries?
-        true
-      end
-
       # https://docs.snowflake.com/en/sql-reference/sql/merge
       def supports_merge?
         true
