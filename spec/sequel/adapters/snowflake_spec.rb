@@ -254,7 +254,53 @@ describe Sequel::Snowflake::Dataset do
   end
 
   describe 'LATERAL JOIN feature' do
+    let(:employees) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
+    let(:departments) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
+    before(:each) do
+      db.create_table(departments, :temp => true) do
+        Integer :dept_id
+        String :dept_name
+        Integer :budget
+      end
+
+      db.create_table(employees, :temp => true) do
+        Integer :emp_id
+        String :emp_name
+        Integer :dept_id
+        Integer :salary
+      end
+
+      db[departments].insert({ dept_id: 1, dept_name: 'Engineering', budget: 100000 })
+      db[departments].insert({ dept_id: 2, dept_name: 'Sales', budget: 80000 })
+      db[employees].insert({ emp_id: 1, emp_name: 'Alice', dept_id: 1, salary: 75000 })
+      db[employees].insert({ emp_id: 2, emp_name: 'Bob', dept_id: 1, salary: 80000 })
+      db[employees].insert({ emp_id: 3, emp_name: 'Charlie', dept_id: 2, salary: 60000 })
+      db[employees].insert({ emp_id: 4, emp_name: 'Diana', dept_id: 2, salary: 65000 })
+    end
+
+    after(:each) do
+      db.drop_table(employees)
+      db.drop_table(departments)
+    end
+
+    it 'can use LATERAL JOIN' do
+      query = <<-SQL
+        SELECT d.dept_name, e.emp_name AS employee, e.salary
+        FROM #{departments} AS d,
+        LATERAL (SELECT emp_name, salary FROM #{employees} AS e WHERE e.dept_id = d.dept_id) AS e
+        ORDER BY d.dept_name, e.salary DESC
+        SQL
+
+      res = db.fetch(query).all
+
+      expect(res).to match_array([
+        { dept_name: 'Engineering', employee: 'Bob', salary: 80000 },
+        { dept_name: 'Engineering', employee: 'Alice', salary: 75000 },
+        { dept_name: 'Sales', employee: 'Diana', salary: 65000 },
+        { dept_name: 'Sales', employee: 'Charlie', salary: 60000 },
+      ])
+    end
   end
 
   describe 'MERGE feature' do
