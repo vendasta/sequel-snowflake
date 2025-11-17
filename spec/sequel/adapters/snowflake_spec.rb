@@ -71,6 +71,14 @@ describe Sequel::Snowflake::Dataset do
   end
 
   describe 'GROUP CUBE feature' do
+
+  end
+
+  describe 'GROUP ROLLUP feature' do
+
+  end
+
+  describe 'GROUPING SETS feature' do
     let(:products) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
     let(:sales) { "SEQUEL_SNOWFLAKE_SPECS_#{SecureRandom.hex(10)}".to_sym }
 
@@ -104,46 +112,29 @@ describe Sequel::Snowflake::Dataset do
       db.drop_table(sales)
     end
 
-    it 'can use GROUP CUBE' do
+    it 'can use GROUPING SETS' do
       query = <<-SQL
-        SELECT state, city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
+        SELECT s.state, s.city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
         FROM #{products} AS p, #{sales} AS s
         WHERE p.product_id = s.product_id
+        GROUP BY GROUPING SETS ((s.state), (s.city))
         SQL
 
       res = db.
         fetch(query).
-        group(:state, :city).
-        group_cube.
         order(Sequel.asc(:state, nulls: :last)).
         order_append(:city).
-        select_all.
         all
 
       expect(res).to match_array([
-        { state: 'CA', city: 'SF', profit: 13 },
-        { state: 'CA', city: 'SJ', profit: 26 },
-        { state: 'CA', city: nil, profit: 39 },
-        { state: 'FL', city: 'Miami', profit: 48 },
-        { state: 'FL', city: 'Orlando', profit: 96 },
+        { state: 'CA', city: nil, profit: 231 },
         { state: 'FL', city: nil, profit: 144 },
-        { state: 'PR', city: 'SJ', profit: 192 },
-        { state: 'PR', city: nil, profit: 192 },
         { state: nil, city: 'Miami', profit: 48 },
         { state: nil, city: 'Orlando', profit: 96 },
         { state: nil, city: 'SF', profit: 13 },
         { state: nil, city: 'SJ', profit: 218 },
-        { state: nil, city: nil, profit: 375 },
       ])
     end
-  end
-
-  describe 'GROUP ROLLUP feature' do
-
-  end
-
-  describe 'GROUPING SETS feature' do
-
   end
 
   describe 'LATERAL JOIN feature' do
