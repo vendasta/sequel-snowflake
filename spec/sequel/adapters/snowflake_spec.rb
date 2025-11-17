@@ -105,17 +105,17 @@ describe Sequel::Snowflake::Dataset do
     end
 
     it 'can use GROUP CUBE' do
-      query = <<-SQL
-        SELECT s.state, s.city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
-        FROM #{products} AS p, #{sales} AS s
-        WHERE p.product_id = s.product_id
-        GROUP BY CUBE (s.state, s.city)
-        SQL
-
-      res = db.
-        fetch(query).
-        order(Sequel.asc(:state, nulls: :last)).
-        order_append(:city).
+      res = db.from(Sequel[products].as(:p)).
+        join(Sequel[sales].as(:s), Sequel[:p][:product_id] => Sequel[:s][:product_id]).
+        select(
+          Sequel[:s][:state],
+          Sequel[:s][:city],
+          Sequel.function(:sum, Sequel.*(Sequel.-(Sequel[:s][:retail_price], Sequel[:p][:wholesale_price]), Sequel[:s][:quantity])).as(:profit)
+        ).
+        group(Sequel[:s][:state], Sequel[:s][:city]).
+        group_cube.
+        order(Sequel.asc(Sequel[:s][:state], nulls: :last)).
+        order_append(Sequel[:s][:city]).
         all
 
       expect(res).to match_array([
@@ -169,17 +169,17 @@ describe Sequel::Snowflake::Dataset do
     end
 
     it 'can use GROUP ROLLUP' do
-      query = <<-SQL
-        SELECT s.state, s.city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
-        FROM #{products} AS p, #{sales} AS s
-        WHERE p.product_id = s.product_id
-        GROUP BY ROLLUP (s.state, s.city)
-        SQL
-
-      res = db.
-        fetch(query).
-        order(Sequel.asc(:state, nulls: :last)).
-        order_append(:city).
+      res = db.from(Sequel[products].as(:p)).
+        join(Sequel[sales].as(:s), Sequel[:p][:product_id] => Sequel[:s][:product_id]).
+        select(
+          Sequel[:s][:state],
+          Sequel[:s][:city],
+          Sequel.function(:sum, Sequel.*(Sequel.-(Sequel[:s][:retail_price], Sequel[:p][:wholesale_price]), Sequel[:s][:quantity])).as(:profit)
+        ).
+        group(Sequel[:s][:state], Sequel[:s][:city]).
+        group_rollup.
+        order(Sequel.asc(Sequel[:s][:state], nulls: :last)).
+        order_append(Sequel[:s][:city]).
         all
 
       expect(res).to match_array([
@@ -229,17 +229,17 @@ describe Sequel::Snowflake::Dataset do
     end
 
     it 'can use GROUPING SETS' do
-      query = <<-SQL
-        SELECT s.state, s.city, SUM((s.retail_price - p.wholesale_price) * s.quantity) AS profit
-        FROM #{products} AS p, #{sales} AS s
-        WHERE p.product_id = s.product_id
-        GROUP BY GROUPING SETS ((s.state), (s.city))
-        SQL
-
-      res = db.
-        fetch(query).
-        order(Sequel.asc(:state, nulls: :last)).
-        order_append(:city).
+      res = db.from(Sequel[products].as(:p)).
+        join(Sequel[sales].as(:s), Sequel[:p][:product_id] => Sequel[:s][:product_id]).
+        select(
+          Sequel[:s][:state],
+          Sequel[:s][:city],
+          Sequel.function(:sum, Sequel.*(Sequel.-(Sequel[:s][:retail_price], Sequel[:p][:wholesale_price]), Sequel[:s][:quantity])).as(:profit)
+        ).
+        group([Sequel[:s][:state]], [Sequel[:s][:city]]).
+        grouping_sets.
+        order(Sequel.asc(Sequel[:s][:state], nulls: :last)).
+        order_append(Sequel[:s][:city]).
         all
 
       expect(res).to match_array([
@@ -285,14 +285,21 @@ describe Sequel::Snowflake::Dataset do
     end
 
     it 'can use LATERAL JOIN' do
-      query = <<-SQL
-        SELECT d.dept_name, e.emp_name AS employee, e.salary
-        FROM #{departments} AS d,
-        LATERAL (SELECT emp_name, salary FROM #{employees} AS e WHERE e.dept_id = d.dept_id) AS e
-        ORDER BY d.dept_name, e.salary DESC
-        SQL
-
-      res = db.fetch(query).all
+      res = db.from(
+        Sequel[departments].as(:d),
+        db[employees].
+          where(Sequel[:d][:dept_id] => :dept_id).
+          select(:emp_name, :salary).
+          lateral.
+          as(:e)
+      ).
+        select(
+          Sequel[:d][:dept_name],
+          Sequel[:e][:emp_name].as(:employee),
+          Sequel[:e][:salary]
+        ).
+        order(Sequel[:d][:dept_name], Sequel.desc(Sequel[:e][:salary])).
+        all
 
       expect(res).to match_array([
         { dept_name: 'Engineering', employee: 'Bob', salary: 80000 },
