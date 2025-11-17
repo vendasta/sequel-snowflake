@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.3.0 / 2025-01-31
+## 2.3.0 / 2025-11-17
 * Add support for `GROUP CUBE`
 * Add support for `GROUP ROLLUP`
 * Add support for `GROUPING SETS`
