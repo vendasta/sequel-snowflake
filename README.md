@@ -1,5 +1,9 @@
 # sequel-snowflake
 
+> [!WARNING]
+> This gem is no longer maintained, as we no longer use Snowflake and don't have any way
+to run tests moving forward. New maintainers or a fork is recommended.
+
 An adapter to connect to Snowflake databases using [Sequel](http://sequel.jeremyevans.net/).
 This provides proper types for returned values, as opposed to the ODBC adapter.
 
