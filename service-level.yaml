@@ -1,0 +1,6 @@
+services:
+  - name: sequel-snowflake
+    owner: honey-badger
+    language: ruby
+    nonServiceType: library
+    description: "Sequel adapter gem for connecting to Snowflake databases via ODBC (no longer maintained)"
